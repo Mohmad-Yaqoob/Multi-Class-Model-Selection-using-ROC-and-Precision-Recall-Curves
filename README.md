@@ -1,29 +1,24 @@
-##  Author
-**Name:** Mohmad Yaqoob
-
-**Roll No:** DA25M017
-
-**Course:** DA5401 -  Data Analytics Laboratory 
-
-**Institute:** IIT Madras
-
-
+## Author
+**Name:** Mohmad Yaqoob  
+**Roll No:** DA25M017  
+**Course:** DA5401 - Data Analytics Laboratory  
+**Institute:** IIT Madras  
 **Date:** 27 October 2025  
 
-#  DA5401 – Assignment 7: Model Selection
+# DA5401 – Assignment 7: Model Selection
 
-This repository contains my complete implementation and analysis for **Assignment 7: Model Selection**, as part of the *Data Analytics Laboratory  (DA5401)* course.  
-The project explores multiple supervised learning models, their evaluation metrics, and model selection techniques using the **Landsat Satellite dataset (sat.trn / sat.tst)**.
+This report presents the complete implementation and analysis for **Assignment 7: Model Selection**, part of the *Data Analytics Laboratory (DA5401)* course.  
+The project evaluates multiple supervised learning models using the **Landsat Satellite dataset (`sat.trn` / `sat.tst`)**.
 
 ---
 
 ## Overview
 
-The primary goal of this assignment was to:
-- Implement and compare **multiple machine learning models** on a multi-class classification task.
-- Evaluate models using **accuracy**, **F1-score**, **ROC–AUC**, and **Precision–Recall (PRC–AP)** metrics.
-- Understand **threshold-dependent vs. threshold-independent** performance.
-- Explore **calibration, ensembles**, and **failure cases (AUC < 0.5)** for deeper understanding.
+The goals of this assignment were to:  
+- Implement and compare **multiple machine learning models** on a multi-class classification task.  
+- Evaluate models using **Accuracy, Weighted F1, ROC–AUC, and Average Precision (PRC–AP)**.  
+- Understand **threshold-dependent vs. threshold-independent performance**.  
+- Explore **probability calibration, ensemble learning**, and **failure cases (AUC < 0.5)**.
 
 ---
 
@@ -31,8 +26,8 @@ The primary goal of this assignment was to:
 
 | Part | Task | Description |
 |:-----|:-----|:-------------|
-| **A** | Baseline Model Training | Trained six base models (KNN, SVC, Decision Tree, Logistic Regression, Naive Bayes, Dummy) and evaluated baseline F1-scores. |
-| **B** | ROC–AUC Analysis | Computed and interpreted One-vs-Rest (OvR) ROC curves, identifying the best performing model by AUC. |
+| **A** | Baseline Model Training | Trained six base models (KNN, SVC, Decision Tree, Logistic Regression, Naive Bayes, Dummy) and evaluated F1-scores. |
+| **B** | ROC–AUC Analysis | Computed One-vs-Rest ROC curves and identified the best performing model by AUC. |
 | **C** | PRC–AP Analysis | Computed macro-averaged Precision–Recall curves to assess precision–recall trade-offs. |
 | **D** | Final Recommendation | Synthesized F1, ROC–AUC, and PRC–AP results to recommend the optimal model. |
 | **E** | Brownie Points | Extended analysis with RandomForest, XGBoost, Voting Ensemble, and an intentionally poor (AUC < 0.5) model. |
@@ -46,82 +41,76 @@ The primary goal of this assignment was to:
 - **Classes:** 5 land-cover categories (after removing class 7)  
 - **Shape:** `(4927, 36)`  
 
-All labels were remapped from `[1–5]` to `[0–4]` for compatibility with libraries like XGBoost.
+Labels were remapped from `[1–5]` to `[0–4]` for compatibility with scikit-learn and XGBoost.
 
 ---
 
 ## Models Evaluated
 
 | Model | Category | Description |
-|:------|:----------|:-------------|
-| **KNN** | Instance-based | Classifies samples based on proximity in feature space. |
+|:------|:--------|:------------|
+| **KNN** | Instance-based | Classifies samples based on nearest neighbors in feature space. |
 | **SVC (RBF)** | Margin-based | Separates classes using nonlinear hyperplanes. |
-| **Decision Tree** | Tree-based | Recursive feature partitioning; prone to overfitting. |
-| **Logistic Regression** | Linear | Interpretable model with OvR extension. |
-| **Naive Bayes (Gaussian)** | Probabilistic | Based on conditional independence assumption. |
-| **Dummy Classifier** | Baseline | Predicts majority class as reference baseline. |
-| **RandomForest** | Ensemble (Bagging) | Averages multiple trees to reduce variance. |
+| **Decision Tree** | Tree-based | Recursive partitioning; can overfit small data subsets. |
+| **Logistic Regression** | Linear | OvR classifier with interpretable coefficients. |
+| **Naive Bayes (Gaussian)** | Probabilistic | Assumes conditional independence of features. |
+| **Dummy Classifier** | Baseline | Predicts the majority class as reference. |
+| **RandomForest** | Ensemble (Bagging) | Averages multiple decision trees to reduce variance. |
 | **XGBoost** | Ensemble (Boosting) | Sequentially improves weak learners using gradient updates. |
 | **Voting Ensemble** | Hybrid | Combines SVC, RandomForest, and XGBoost using soft voting. |
-| **Inverted Classifier** | Synthetic | Demonstrates AUC < 0.5 by inverting probabilities. |
+| **Inverted Classifier** | Synthetic | Demonstrates AUC < 0.5 by inverting predicted probabilities. |
 
 ---
 
 ## Evaluation Metrics
 
-- **Accuracy** – Overall correctness of predictions.  
+- **Accuracy** – Fraction of correct predictions.  
 - **Weighted F1-Score** – Harmonic mean of precision and recall, weighted by class frequency.  
-- **ROC–AUC (One-vs-Rest)** – Measures class separability independent of threshold.  
-- **Average Precision (PRC–AP)** – Area under the precision–recall curve; best for imbalanced data.
+- **Macro ROC–AUC (OvR)** – Measures class separability, independent of threshold.  
+- **Macro Average Precision (PRC–AP)** – Area under precision-recall curve; robust for imbalanced classes.
 
 ---
 
-## Key Results Summary
+## Baseline Evaluation Results
 
-| Metric | Best Model | Score | Interpretation |
-|:--------|:------------|:-------|:---------------|
-| **Accuracy / F1** | KNN | 0.94 / 0.94 | Performs well with clear neighborhood structure. |
-| **ROC–AUC** | SVC | 0.994 | Excellent separation of classes. |
-| **PRC–AP** | SVC | 0.957 | Strong balance between precision and recall. |
-| **Ensemble AUC** | Voting (SVC + RF + XGB) | 0.991 | Most stable across thresholds. |
-| **AUC < 0.5** | Inverted Model | 0.031 | Illustrates “worse than random” behavior. |
-
----
-
-## Insights
-
-- **SVC** consistently provided top-tier ROC–AUC and PRC–AP, showing robust class separation.  
-- **KNN** achieved slightly better raw accuracy but was more sensitive to class overlap.  
-- **RandomForest** and **XGBoost** performed almost identically, confirming the strength of tree-based ensembles.  
-- The **Voting Ensemble** marginally improved macro metrics, showing strong calibration and threshold stability.  
-- The **Inverted Classifier** clearly demonstrated how probability inversion leads to AUC < 0.5 — validating theoretical understanding.
+| Model            | Macro ROC–AUC | Avg Precision (AP) | Accuracy  | Weighted F1 |
+|:-----------------|:-------------:|:-----------------:|:---------:|:-----------:|
+| VotingEnsemble    | 0.991080      | 0.965060          | 0.933063  | 0.931648    |
+| RandomForest      | 0.991007      | 0.967117          | 0.932049  | 0.930617    |
+| XGBoost           | 0.989647      | 0.966189          | 0.929006  | 0.927847    |
+| SVC               | 0.988418      | 0.957941          | 0.923935  | 0.922663    |
+| KNN               | 0.987383      | 0.953977          | 0.933063  | 0.932003    |
+| LogisticRegression| 0.968913      | 0.894157          | 0.883367  | 0.877395    |
+| NaiveBayes        | 0.959927      | 0.863124          | 0.831643  | 0.834948    |
+| DecisionTree      | 0.926282      | 0.806677          | 0.896552  | 0.895857    |
+| Dummy             | 0.500000      | 0.200000          | 0.311359  | 0.147853    |
+| InvertedModel     | 0.031087      | 0.110304          | 0.001014  | 0.001563    |
 
 ---
 
-## Enhancement
+## Key Insights
 
-For deployment-level robustness:
-- Use a **Calibrated Voting Ensemble** (SVC + RandomForest + XGBoost) with isotonic calibration.  
-- Apply **feature importance visualization (SHAP)** for interpretability.  
-- Optionally use **stacking** with Logistic Regression as a meta-learner for refined final predictions.
-
-This yields a model that’s:
-✅ Highly accurate  
-✅ Calibrated and interpretable  
-✅ Resistant to overfitting  
-✅ Generalizable across thresholds  
+- **Voting Ensemble** achieved the **highest ROC–AUC (0.9911)** and strong **Average Precision (0.9651)**, slightly outperforming individual models.  
+- **RandomForest** and **XGBoost** performed almost equally well, confirming the effectiveness of tree-based ensembles.  
+- **SVC** and **KNN** performed strongly but slightly lower than ensemble models.  
+- **Logistic Regression** showed moderate performance, limited by linear boundaries.  
+- **Naive Bayes** and **Decision Tree** were weaker, while **Dummy Classifier** performed at random.  
+- **Inverted Classifier** illustrates AUC < 0.5: flipping probabilities reverses correct vs. incorrect ranking.
 
 ---
 
-## Conclusion
+## Conceptual Takeaways
 
-Through a step-by-step exploration of model selection, this project demonstrated:
-- How to evaluate models using threshold-independent (ROC–AUC) and threshold-dependent (PRC–AP) metrics.
-- The benefits of ensemble methods like RandomForest, XGBoost, and soft-voting combinations.  
-- How poorly calibrated or inverted models can perform worse than random guessing (AUC < 0.5).
-  
+- **AUC < 0.5** indicates an inverted decision boundary; flipping predictions would immediately improve performance.  
+- Ensemble methods like **VotingClassifier, RandomForest, and XGBoost** balance bias and variance, yielding stable probability estimates across thresholds.  
+- Calibrated ensembles produce the most reliable performance in high-dimensional and overlapping datasets.
+
 ---
 
-**Final Recommendation:**  
-- The **Calibrated Voting Ensemble (SVC + RandomForest + XGBoost)** is the most balanced and production-ready model, achieving a macro ROC–AUC of ~0.991 and macro AP of ~0.965.
+## Final Recommendation
 
+- **Best Individual Model:** `XGBoost` – High precision, stable recall, excellent ROC separation.  
+- **Best Overall Model:** `Voting Ensemble (SVC + RF + XGB)` – Highest overall metrics and smooth performance across thresholds.  
+- **Educational Highlight:** `Inverted Model` demonstrates the concept of *AUC < 0.5*, emphasizing the importance of probability calibration.
+
+---
